@@ -44,8 +44,15 @@ public class FilippaMatch
                 foreach (var pe in playerEngines)
                 {
                     var playedCard = pe.PlayTrick(trick);
-                    
-                    Console.WriteLine($"{pe.Player.Name} played {playedCard}");
+
+                    if (playedCard.Value == 0)
+                    {
+                        Console.WriteLine($"{pe.Player.Name} played {playedCard}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"{pe.Player.Name} played {playedCard} for {playedCard.Value} points");
+                    }
                 }
 
                 var winner = trick.GetWinner();
