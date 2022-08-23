@@ -2,9 +2,13 @@
 
 public class Deck
 {
+    public static readonly Deck Default = new Deck();
+    
     private static readonly Random Random = new Random();
 
-    private Card[] _cards = CreateDeck().ToArray();
+    private readonly Card[] _cards = CreateDeck().ToArray();
+    
+    private Deck(){}
     
     private static IEnumerable<Card> CreateDeck()
     {
@@ -21,14 +25,16 @@ public class Deck
         }
     }
 
-    public IReadOnlyList<Card> Cards => _cards;
-
-    public void Shuffle(int passes = 1)
+    public IEnumerable<Card> Shuffle(int passes = 1)
     {
+        var cards = _cards.ToArray();
+        
         for (var i = 0; i < passes; i++)
         {
-            ShuffleImpl(ref _cards);
+            ShuffleImpl(ref cards);
         }
+
+        return cards;
 
         static void ShuffleImpl(ref Card[] cards)
         {
