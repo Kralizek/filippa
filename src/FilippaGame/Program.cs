@@ -8,7 +8,7 @@ match.AddPlayer(new DumbPlayer("Player 2"));
 match.AddPlayer(new DumbPlayer("Player 3"));
 match.AddPlayer(new DumbPlayer("Player 4"));
 
-var results = match.Play(winningScore: 200);
+var results = match.Play(winningScore: 100);
 
 Console.WriteLine("--- Result of the match ---");
 
