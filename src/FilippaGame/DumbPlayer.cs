@@ -1,21 +1,21 @@
-﻿using Filippa;
+﻿namespace Filippa;
 
-public class FakePlayer : Player
+public class DumbPlayer : Player
 {
-    public FakePlayer(string name) : base(name)
+    public DumbPlayer(string name) : base(name)
     {
     }
 
     public override IPlayerEngine PlayHand(IReadOnlyList<Card> cards)
     {
-        return new FakePlayerEngine(this, cards);
+        return new DumbPlayerEngine(this, cards);
     }
 
-    private class FakePlayerEngine : PlayerEngineBase
+    private class DumbPlayerEngine : PlayerEngineBase
     {
         private static readonly Random Random = new Random();
         
-        public FakePlayerEngine(Player player, IReadOnlyList<Card> cards) : base(player, cards)
+        public DumbPlayerEngine(Player player, IReadOnlyList<Card> cards) : base(player, cards)
         {
         }
 

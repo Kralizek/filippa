@@ -6,6 +6,8 @@ public class FilippaMatch
 
     public bool PassCards { get; init; } = true;
 
+    public bool ShowPlayedCards { get; init; } = true;
+
     public void AddPlayer(Player player)
     {
         if (_players.Count >= 4) throw new InvalidOperationException("You can't add another player to this match");
@@ -24,38 +26,55 @@ public class FilippaMatch
 
         var result = new MatchResults();
 
+        var round = 0;
+
         do
         {
+            round++;
+
+            var currentStandingPoints = result.StandingPoints;
+
+            Console.WriteLine($"--- Round {round} ---");
+
             var playerEngines = _players
                 .Zip(Deck.Default.Shuffle(10).Chunk(13))
                 .Select(c => c.First.PlayHand(c.Second))
                 .ToArray();
 
-            var playerCards = new Dictionary<Player, IList<Card>>(); 
+            var loop = playerEngines.ToLoop();
+
+            var playerCards = new Dictionary<Player, IList<Card>>();
 
             Suit? previousSuit = default;
 
+            var firstPlayer = playerEngines.PickAny();
+
             for (var i = 0; i < 13; i++)
             {
-                Console.WriteLine($"--- Trick {i+1} ---");
-                
-                var trick = new TrickImpl(previousSuit); 
-                
-                foreach (var pe in playerEngines)
+                var trick = new TrickImpl(previousSuit);
+
+                foreach (var pe in loop.SkipWhile(p => p != firstPlayer).Take(4))
                 {
                     var playedCard = pe.PlayTrick(trick);
 
-                    if (playedCard.Value == 0)
+                    if (ShowPlayedCards)
                     {
-                        Console.WriteLine($"{pe.Player.Name} played {playedCard}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{pe.Player.Name} played {playedCard} for {playedCard.Value} points");
+                        Console.WriteLine($"--- Trick {i + 1} ---");
+                        
+                        if (playedCard.Value == 0)
+                        {
+                            Console.WriteLine($"{pe.Player.Name} played {playedCard}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"{pe.Player.Name} played {playedCard} for {playedCard.Value} points");
+                        }
                     }
                 }
 
                 var winner = trick.GetWinner();
+
+                firstPlayer = playerEngines.Single(pe => pe.Player == winner.Item1);
 
                 foreach (var pe in playerEngines)
                 {
@@ -77,38 +96,24 @@ public class FilippaMatch
                 previousSuit = trick.PlayedCards.First().Suit;
             }
 
-            result.Scores = playerCards.ToDictionary(k => k.Key, v => v.Value.Sum(p => p.Value));
+            var roundResults = new RoundResults(result, playerCards);
 
-        } while (false);
+            result += roundResults;
+
+            Console.WriteLine("--- Result of the round ---");
+
+            foreach (var item in roundResults.Scores)
+            {
+                Console.WriteLine($"{item.Key.Name}: {item.Value}");
+            }
+
+            Console.WriteLine($"Standing points before the round: {currentStandingPoints}");
+            Console.WriteLine($"Standing points after the round: {result.StandingPoints}");
+
+            Console.WriteLine();
+
+        } while (result.Scores.Values.All(p => p < winningScore));
 
         return result;
     }
-}
-
-public record MatchResults
-{
-    public IReadOnlyDictionary<Player, int> Scores { get; set; }
-}
-
-public class TrickImpl : Trick
-{
-    private readonly IList<(Player player, Card card)> _playedCards = new List<(Player, Card)>();
-
-    public TrickImpl(Suit? previousSuit)
-    {
-        PreviousSuit = previousSuit;
-    }
-    
-    public override Suit? PreviousSuit { get; }
-
-    public override IEnumerable<Card> PlayedCards => _playedCards.Select(c => c.card);
-
-    public IEnumerable<Card> GetPlayerCards(Player player) => _playedCards.Where(p => p.player == player).Select(c => c.card);
-
-    public override void PlayCard(Player player, Card card)
-    {
-        _playedCards.Add((player, card));
-    }
-
-    public (Player, Card) GetWinner() => _playedCards.Where(c => c.card.Suit == CurrentSuit).OrderByDescending(c => c.card.Rank).FirstOrDefault();
 }
