@@ -37,6 +37,25 @@ public class TrickStartedEventArgs : EventArgs
     }
 }
 
+public class TrickCompletedEventArgs : EventArgs
+{
+    public Suit? Suit { get; }
+
+    public Player Winner { get; }
+
+    public Card WinningCard { get; }
+
+    public int TotalValue { get; }
+
+    public TrickCompletedEventArgs(Suit? suit, Player winner, Card winningCard, int totalValue)
+    {
+        Suit = suit;
+        Winner = winner;
+        WinningCard = winningCard;
+        TotalValue = totalValue;
+    }
+}
+
 public class CardPlayedEventArgs : EventArgs
 {
     public CardPlayedEventArgs(Player player, Card card)
@@ -54,8 +73,27 @@ public class MatchCompletedEventArgs : EventArgs
 {
     public MatchResults MatchResults { get; }
 
-    public MatchCompletedEventArgs(MatchResults matchResults)
+    public int Round { get; }
+
+    public MatchCompletedEventArgs(MatchResults matchResults, int round)
     {
         MatchResults = matchResults;
+        Round = round;
+    }
+}
+
+public class CardsReceivedEventArgs : EventArgs
+{
+    public Player Receiver { get; }
+
+    public Card[] Cards { get; }
+
+    public Player Sender { get; }
+
+    public CardsReceivedEventArgs(Player receiver, Card[] cards, Player sender)
+    {
+        Receiver = receiver;
+        Cards = cards;
+        Sender = sender;
     }
 }

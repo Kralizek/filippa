@@ -35,10 +35,14 @@ public class FilippaMatch
             var loop = playerEngines.ToLoop();
 
             playerEngines
-                .Select(pe => new { CardsToPass = pe.PassCards() })
+                .Select(pe => new { Player = pe.Player, CardsToPass = pe.PassCards() })
                 .Zip(loop.Skip(1).Take(4))
                 .ToList()
-                .ForEach(zip => zip.Second.ReceivePassedCards(zip.First.CardsToPass));
+                .ForEach(zip =>
+                {
+                    zip.Second.ReceivePassedCards(zip.First.CardsToPass);
+                    CardsReceived?.Invoke(this, new CardsReceivedEventArgs(zip.Second.Player, zip.First.CardsToPass, zip.First.Player));
+                });
             
             var playerCards = new Dictionary<Player, IList<Card>>();
 
@@ -81,6 +85,8 @@ public class FilippaMatch
                 }
 
                 previousSuit = trick.PlayedCards.First().Suit;
+                
+                TrickCompleted?.Invoke(this, new TrickCompletedEventArgs(previousSuit, winner.Item1, winner.Item2, trick.PlayedCards.Sum(c => c.Value)));
             }
 
             var roundResults = new RoundResults(result, playerCards);
@@ -91,12 +97,16 @@ public class FilippaMatch
 
         } while (result.Scores.Values.All(p => p < winningScore));
         
-        MatchCompleted?.Invoke(this, new MatchCompletedEventArgs(result));
+        MatchCompleted?.Invoke(this, new MatchCompletedEventArgs(result, round));
     }
 
-    public event EventHandler<TrickStartedEventArgs>? TrickStarted; 
+    public event EventHandler<TrickStartedEventArgs>? TrickStarted;
+
+    public event EventHandler<TrickCompletedEventArgs>? TrickCompleted; 
 
     public event EventHandler<CardPlayedEventArgs>? CardPlayed;
+
+    public event EventHandler<CardsReceivedEventArgs>? CardsReceived; 
 
     public event EventHandler<RoundStartedEventArgs>? RoundStarted;
 

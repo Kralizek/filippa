@@ -10,4 +10,6 @@ public abstract class Player
     }
 
     public abstract IPlayerEngine PlayHand(IReadOnlyList<Card> cards);
+
+    public override string ToString() => Name;
 }
