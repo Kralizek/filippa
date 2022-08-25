@@ -1,4 +1,5 @@
 ﻿namespace Filippa;
+using static Helpers;
 
 public class DumbPlayer : Player
 {
@@ -13,8 +14,6 @@ public class DumbPlayer : Player
 
     private class DumbPlayerEngine : PlayerEngineBase
     {
-        private static readonly Random Random = new Random();
-        
         public DumbPlayerEngine(Player player, IReadOnlyList<Card> cards) : base(player, cards)
         {
         }
@@ -28,7 +27,7 @@ public class DumbPlayer : Player
             
             if (trick.PlayedCards.Any())
             {
-                var playingSuit = trick.PlayedCards.First().Suit;
+                var playingSuit = trick.CurrentSuit!.Value;
                 
                 var currentSuit = playingSuit;
 
@@ -72,8 +71,11 @@ public class DumbPlayer : Player
             }
         }
 
-        private static Suit GetNextSuit(Suit suit) => (Suit)(((int)suit + 1) % 4);
-
-        private static Suit GetRandomSuit() => (Suit)Random.Next(0, 4);
+        protected override Card[] SelectCardsToPass() => CurrentCards
+            .OrderByDescending(c => c.Value)
+            .ThenByDescending(c => c.Rank)
+            .ThenBy(c => c.Suit)
+            .Take(3)
+            .ToArray();
     }
 }

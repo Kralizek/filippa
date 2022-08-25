@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
 using Filippa;
 
 var match = new FilippaMatch { PassCards = false, ShowPlayedCards = false};
