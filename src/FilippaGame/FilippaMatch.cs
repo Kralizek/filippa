@@ -4,8 +4,6 @@ public class FilippaMatch
 {
     private readonly IList<Player> _players = new List<Player>();
 
-    public bool PassCards { get; init; } = true;
-
     public bool ShowPlayedCards { get; init; } = true;
 
     public void AddPlayer(Player player)
@@ -18,11 +16,6 @@ public class FilippaMatch
     public MatchResults Play(int winningScore = 100)
     {
         if (_players.Count != 4) throw new InvalidOperationException("You can't start a match without 4 players");
-
-        if (PassCards)
-        {
-            throw new NotSupportedException("Passing cards is not yet supported");
-        }
 
         var result = new MatchResults();
 
@@ -43,6 +36,12 @@ public class FilippaMatch
 
             var loop = playerEngines.ToLoop();
 
+            playerEngines
+                .Select(pe => new { CardsToPass = pe.PassCards() })
+                .Zip(loop.Skip(1).Take(4))
+                .ToList()
+                .ForEach(zip => zip.Second.ReceivePassedCards(zip.First.CardsToPass));
+            
             var playerCards = new Dictionary<Player, IList<Card>>();
 
             Suit? previousSuit = default;

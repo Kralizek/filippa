@@ -1,7 +1,7 @@
 ﻿
 using Filippa;
 
-var match = new FilippaMatch { PassCards = false, ShowPlayedCards = false};
+var match = new FilippaMatch { ShowPlayedCards = false};
 
 match.AddPlayer(new DumbPlayer("Player 1"));
 match.AddPlayer(new DumbPlayer("Player 2"));
