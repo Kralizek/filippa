@@ -4,8 +4,6 @@ public class FilippaMatch
 {
     private readonly IList<Player> _players = new List<Player>();
 
-    public bool ShowPlayedCards { get; init; } = true;
-
     public void AddPlayer(Player player)
     {
         if (_players.Count >= 4) throw new InvalidOperationException("You can't add another player to this match");
@@ -13,7 +11,7 @@ public class FilippaMatch
         _players.Add(player);
     }
 
-    public MatchResults Play(int winningScore = 100)
+    public void Play(int winningScore = 100)
     {
         if (_players.Count != 4) throw new InvalidOperationException("You can't start a match without 4 players");
 
@@ -26,8 +24,8 @@ public class FilippaMatch
             round++;
 
             var currentStandingPoints = result.StandingPoints;
-
-            Console.WriteLine($"--- Round {round} ---");
+            
+            RoundStarted?.Invoke(this, new RoundStartedEventArgs(round));
 
             var playerEngines = _players
                 .Zip(Deck.Default.Shuffle(10).Chunk(13))
@@ -52,23 +50,13 @@ public class FilippaMatch
             {
                 var trick = new TrickImpl(previousSuit);
 
+                TrickStarted?.Invoke(this, new TrickStartedEventArgs(i + 1));
+
                 foreach (var pe in loop.SkipWhile(p => p != firstPlayer).Take(4))
                 {
                     var playedCard = pe.PlayTrick(trick);
 
-                    if (ShowPlayedCards)
-                    {
-                        Console.WriteLine($"--- Trick {i + 1} ---");
-                        
-                        if (playedCard.Value == 0)
-                        {
-                            Console.WriteLine($"{pe.Player.Name} played {playedCard}");
-                        }
-                        else
-                        {
-                            Console.WriteLine($"{pe.Player.Name} played {playedCard} for {playedCard.Value} points");
-                        }
-                    }
+                    CardPlayed?.Invoke(this, new CardPlayedEventArgs(pe.Player, playedCard));
                 }
 
                 var winner = trick.GetWinner();
@@ -98,21 +86,21 @@ public class FilippaMatch
             var roundResults = new RoundResults(result, playerCards);
 
             result += roundResults;
-
-            Console.WriteLine("--- Result of the round ---");
-
-            foreach (var item in roundResults.Scores)
-            {
-                Console.WriteLine($"{item.Key.Name}: {item.Value}");
-            }
-
-            Console.WriteLine($"Standing points before the round: {currentStandingPoints}");
-            Console.WriteLine($"Standing points after the round: {result.StandingPoints}");
-
-            Console.WriteLine();
+            
+            RoundCompleted?.Invoke(this, new RoundCompletedEventArgs(result, roundResults, currentStandingPoints));
 
         } while (result.Scores.Values.All(p => p < winningScore));
-
-        return result;
+        
+        MatchCompleted?.Invoke(this, new MatchCompletedEventArgs(result));
     }
+
+    public event EventHandler<TrickStartedEventArgs>? TrickStarted; 
+
+    public event EventHandler<CardPlayedEventArgs>? CardPlayed;
+
+    public event EventHandler<RoundStartedEventArgs>? RoundStarted;
+
+    public event EventHandler<RoundCompletedEventArgs>? RoundCompleted;
+
+    public event EventHandler<MatchCompletedEventArgs>? MatchCompleted;
 }
