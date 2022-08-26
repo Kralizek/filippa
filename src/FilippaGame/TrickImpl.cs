@@ -2,7 +2,7 @@
 
 internal class TrickImpl : Trick
 {
-    private readonly IList<(Player player, Card card)> _playedCards = new List<(Player, Card)>();
+    private readonly IList<Play> _playedCards = new List<Play>();
 
     public TrickImpl(Suit? previousSuit)
     {
@@ -11,14 +11,14 @@ internal class TrickImpl : Trick
     
     public override Suit? PreviousSuit { get; }
 
-    public override IEnumerable<Card> PlayedCards => _playedCards.Select(c => c.card);
+    public override IEnumerable<Play> PlayedCards => _playedCards;
 
-    public IEnumerable<Card> GetPlayerCards(Player player) => _playedCards.Where(p => p.player == player).Select(c => c.card);
+    public IEnumerable<Card> GetPlayerCards(Player player) => _playedCards.Where(p => p.Player == player).Select(c => c.Card);
 
     public override void PlayCard(Player player, Card card)
     {
-        _playedCards.Add((player, card));
+        _playedCards.Add(new Play(player, card));
     }
 
-    public (Player, Card) GetWinner() => _playedCards.Where(c => c.card.Suit == CurrentSuit).OrderByDescending(c => c.card.Rank).FirstOrDefault();
+    public Play GetWinner() => _playedCards.Where(c => c.Card.Suit == CurrentSuit).OrderByDescending(c => c.Card.Rank).First();
 }

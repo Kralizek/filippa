@@ -65,7 +65,7 @@ public class FilippaMatch
 
                 var winner = trick.GetWinner();
 
-                firstPlayer = playerEngines.Single(pe => pe.Player == winner.Item1);
+                firstPlayer = playerEngines.Single(pe => pe.Player == winner.Player);
 
                 foreach (var pe in playerEngines)
                 {
@@ -84,9 +84,9 @@ public class FilippaMatch
                     }
                 }
 
-                previousSuit = trick.PlayedCards.First().Suit;
-                
-                TrickCompleted?.Invoke(this, new TrickCompletedEventArgs(previousSuit, winner.Item1, winner.Item2, trick.PlayedCards.Sum(c => c.Value)));
+                previousSuit = trick.PlayedCards.First().Card.Suit;
+
+                TrickCompleted?.Invoke(this, new TrickCompletedEventArgs(i + 1, previousSuit, winner.Player, winner.Card, trick.PlayedCards));
             }
 
             var roundResults = new RoundResults(result, playerCards);

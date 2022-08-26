@@ -1,74 +1,94 @@
 ﻿using Filippa;
+using Spectre.Console;
+using Spectre.Console.Rendering;
 
 var match = new FilippaMatch();
 
-match.RoundStarted += (_, args) => Console.WriteLine($"--- Round {args.Round} ---");
+match.RoundStarted += (_, args) => AnsiConsole.MarkupLineInterpolated($"[bold]--- Round {args.Round} ---[/]");
 
 match.RoundCompleted += (_, args) =>
 {
-    Console.WriteLine("--- Result of the round ---");
+    AnsiConsole.MarkupLine("[bold]--- Result of the round ---[/]");
 
     if (args.RoundResult.Scores.Values.Any(c => c > 0))
     {
-        Console.WriteLine($"Round won by: {string.Join(", ", args.RoundResult.Scores.Where(c => c.Value > 0).Select(c => c.Key))}");
+        AnsiConsole.MarkupLineInterpolated($"Round won by: [green]{string.Join(", ", args.RoundResult.Scores.Where(c => c.Value > 0).Select(c => c.Key))}[/]");
     }
     else
     {
-        Console.WriteLine("Round with no winners");
+        AnsiConsole.MarkupLine("[red]Round with no winners[/]");
     }
 
+    var table = new Table { Width = 50 };
+    table.AddColumn("Player");
+    table.AddColumn("Engine");
+    table.AddColumn("Points");
+    
     foreach (var item in args.RoundResult.Scores)
     {
-        Console.WriteLine($"{item.Key}: {item.Value}");
+        table.AddRow(item.Key.ToString(), item.Key.GetType().Name, item.Value.ToString());
     }
+    
+    AnsiConsole.Write(table);
 
-    Console.WriteLine($"Standing points before the round: {args.CurrentStandingPoints}");
-    Console.WriteLine($"Standing points after the round: {args.MatchResult.StandingPoints}");
+    AnsiConsole.MarkupLineInterpolated($"Standing points before the round: [yellow]{args.CurrentStandingPoints}[/]");
+    AnsiConsole.MarkupLineInterpolated($"Standing points after the round: [yellow]{args.MatchResult.StandingPoints}[/]");
 
-    Console.WriteLine();
+    AnsiConsole.WriteLine();
 };
-
-match.TrickStarted += (_, args) => Console.WriteLine($"--- Trick {args.Trick} ---");
 
 match.TrickCompleted += (_, args) =>
 {
-    Console.WriteLine();
-    
-    Console.WriteLine($"Trick of {args.Suit} won by {args.Winner} with {args.WinningCard} for a total of {args.TotalValue} points");
-    
-    Console.WriteLine();
-};
+    AnsiConsole.MarkupLineInterpolated($"[bold]--- Trick {args.Trick} ---[/]");
 
-match.CardPlayed += (_, args) =>
-{
-    if (args.Card.Value == 0)
+    var table = new Table { Width = 75 };
+    table.AddColumn("Player");
+    table.AddColumn("Engine");
+    table.AddColumn("Played card");
+    table.AddColumn("Points");
+    table.AddColumn("Winner");
+    
+    foreach (var item in args.PlayedCards)
     {
-        Console.WriteLine($"{args.Player} played {args.Card}");
+        var cells = new List<IRenderable>
+        {
+            new Text(item.Player.ToString()),
+            new Text(item.Player.GetType().Name),
+            new Text(item.Card.ToString()),
+            new Text(item.Card.Value > 0 ? item.Card.Value.ToString() : string.Empty),
+            new Text(item.Player == args.Winner ? "x" : string.Empty)
+        };
+        
+
+        table.AddRow(new TableRow(cells));
     }
-    else
-    {
-        Console.WriteLine($"{args.Player} played {args.Card} for {args.Card.Value} points");
-    }
+    
+    AnsiConsole.Write(table);
+    
+    AnsiConsole.MarkupLineInterpolated($"Trick won by [orange3]{args.Winner}[/] for a total of [red]{args.PlayedCards.Sum(c => c.Card.Value)}[/] points");
+    
+    AnsiConsole.WriteLine();
 };
 
 match.MatchCompleted += (_, args) =>
 {
-    Console.WriteLine("--- Result of the match ---");
+    AnsiConsole.MarkupLine("[bold]--- Result of the match ---[/]");
 
-    var winner = args.MatchResults.Scores.MaxBy(c => c.Value).Key;
+    var table = new Table { Width = 50 };
+    table.AddColumn("Player");
+    table.AddColumn("Engine");
+    table.AddColumn("Points");
     
-    Console.WriteLine($"Match won by {winner} ({winner.GetType().Name}) in {args.Round} rounds");
-
     foreach (var item in args.MatchResults.Scores.OrderByDescending(p => p.Value))
     {
-        Console.WriteLine($"{item.Key}: {item.Value}");
+        table.AddRow(item.Key.ToString(), item.Key.GetType().Name, item.Value.ToString());
     }
+
+    AnsiConsole.Write(table);
+    
+    AnsiConsole.MarkupLineInterpolated($"Rounds: [yellow]{args.Round}[/]");
 };
 
-match.CardsReceived += (_, args) =>
-{
-    Console.WriteLine($"{args.Receiver} received {string.Join(", ", args.Cards.Select(s => s.ToString()))} from {args.Sender}");
-};
 
 match.AddPlayer(new DumbPlayer("Player 1"));
 match.AddPlayer(new DumbPlayer("Player 2"));

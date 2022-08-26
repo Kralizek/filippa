@@ -39,20 +39,23 @@ public class TrickStartedEventArgs : EventArgs
 
 public class TrickCompletedEventArgs : EventArgs
 {
+    public int Trick { get; }
+
     public Suit? Suit { get; }
 
     public Player Winner { get; }
 
     public Card WinningCard { get; }
 
-    public int TotalValue { get; }
+    public IEnumerable<Play> PlayedCards { get; }
 
-    public TrickCompletedEventArgs(Suit? suit, Player winner, Card winningCard, int totalValue)
+    public TrickCompletedEventArgs(int trick, Suit? suit, Player winner, Card winningCard, IEnumerable<Play> playedCards)
     {
+        Trick = trick;
         Suit = suit;
         Winner = winner;
         WinningCard = winningCard;
-        TotalValue = totalValue;
+        PlayedCards = playedCards;
     }
 }
 
