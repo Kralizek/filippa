@@ -22,7 +22,7 @@ Note: the repository already contains a dumb implementation of the `IPlayerEngin
 
 The game is played by four players and uses a standard 52-card deck with cards ranking from Ace (high) down to the two.
 
-Like in the [Black Lady][3] game, the Quenn of Spades and the cards of the heart suit are penalty cards. In Filippa, the penalty cards award a negative amount of points.
+Like in the [Black Lady][3] game, the Queen of Spades and the cards of the Heart suit are penalty cards. In Filippa, the penalty cards award a negative amount of points.
 
 Each game is divided in rounds. Each round is played in tricks and negative and positive points are awarded when all tricks are played. The players who have no penalties at the end of the round are awarded with positive points.
 
