@@ -18,7 +18,7 @@ If you want, you can make a pull request to share the implementation of your bot
 
 Note: the repository already contains a dumb implementation of the `IPlayerEngine` interface. Also, in the `Filippa` project, you'll find an abstract class implementing the same interface. You can use this class if you want most to avoid most of the trivial work.
 
-## Gameplay
+## How to play Filippa
 
 The game is played by four players and uses a standard 52-card deck with cards ranking from Ace (high) down to the two.
 
